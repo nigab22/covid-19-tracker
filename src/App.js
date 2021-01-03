@@ -1,23 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent } from '@material-ui/core';
-import Header from './Header';
+import {
+  Card,
+  CardContent,
+  FormControl,
+  MenuItem,
+  Select,
+} from '@material-ui/core';
 import InfoBox from './InfoBox';
+import Table from './Table';
 import Map from './Map';
 import './App.css';
+import { sortData } from './util';
 
 function App() {
   const [selectedCountry, setSelectedCountry] = useState('worldwide');
   const [countries, setCountries] = useState([]);
-  const [covidDataWorldwide, setCovidDataWorldwide] = useState({
-    cases: 0,
-    deaths: 0,
-    recovered: 0,
-  });
-  const [covidDataForCountry, setCovidDataForCountry] = useState({
-    cases: 0,
-    deaths: 0,
-    recovered: 0,
-  });
+  const [covidDataForCountry, setCovidDataForCountry] = useState({});
+  const [tableData, setTableData] = useState([]);
+
+  useEffect(() => {
+    fetch('https://disease.sh/v3/covid-19/all')
+      .then((response) => response.json())
+      .then((data) => {
+        setCovidDataForCountry(data);
+      });
+  }, []);
 
   useEffect(() => {
     const getCountriesData = async () => {
@@ -28,76 +35,66 @@ function App() {
             name: country.country,
             value: country.countryInfo.iso2,
           }));
+
+          const sortedData = sortData(data);
+          setTableData(sortedData);
           setCountries(countriesList);
         });
     };
-
-    const getCovidData = async () => {
-      await fetch('https://disease.sh/v3/covid-19/all')
-        .then((response) => response.json())
-        .then((data) => {
-          const covidData = {
-            cases: data.cases,
-            deaths: data.deaths,
-            recovered: data.recovered,
-          };
-
-          setCovidDataWorldwide(covidData);
-        });
-    };
-
     getCountriesData();
-    getCovidData();
   }, []);
 
-  useEffect(() => {
-    const getCovidDataForCountry = async () => {
-      await fetch(`https://disease.sh/v3/covid-19/countries/${selectedCountry}`)
-        .then((response) => response.json())
-        .then((data) => {
-          const covidData = {
-            cases: data.cases,
-            deaths: data.deaths,
-            recovered: data.recovered,
-          };
-          setCovidDataForCountry(covidData);
-        });
-    };
-    if (selectedCountry === 'worldwide') {
-      /*****FIX-ME*****/
-      /*setCovidDataForCountry({
-        cases: covidDataWorldwide.cases,
-        deaths: covidDataWorldwide.deaths,
-        recovered: covidDataWorldwide.recovered,
-      });*/
-    } else {
-      getCovidDataForCountry();
-    }
-  }, [selectedCountry]);
+  const onCountryChange = async (e) => {
+    let countryCode = e.target.value;
+
+    const url =
+      countryCode === 'worldwide'
+        ? `https://disease.sh/v3/covid-19/all`
+        : `https://disease.sh/v3/covid-19/countries/${countryCode}?yesterday=1`;
+
+    await fetch(url)
+      .then((response) => response.json())
+      .then((data) => {
+        setSelectedCountry(countryCode);
+        setCovidDataForCountry(data);
+      });
+  };
 
   return (
     <div className="app">
       <div className="app-left">
-        <Header
-          countries={countries}
-          selectedCountry={selectedCountry}
-          setSelectedCountry={setSelectedCountry}
-        />
+        <div className="app-header">
+          <h1>COVID-19 Tracker</h1>
+          <FormControl className="app-dropdown">
+            <Select
+              variant="outlined"
+              value={selectedCountry}
+              onChange={onCountryChange}
+            >
+              <MenuItem value="worldwide">Worldwide</MenuItem>
+              {countries.map((country, index) => (
+                <MenuItem key={index} value={country.value}>
+                  {country.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </div>
         <div className="app-stats">
           <InfoBox
             title="Coronavirus Cases"
-            cases={covidDataForCountry.cases}
-            total={covidDataWorldwide.cases}
+            cases={covidDataForCountry.todayCases}
+            total={covidDataForCountry.cases}
           />
           <InfoBox
             title="Recovered"
-            cases={covidDataForCountry.recovered}
-            total={covidDataWorldwide.recovered}
+            cases={covidDataForCountry.todayRecovered}
+            total={covidDataForCountry.recovered}
           />
           <InfoBox
             title="Deaths"
-            cases={covidDataForCountry.deaths}
-            total={covidDataWorldwide.deaths}
+            cases={covidDataForCountry.todayDeaths}
+            total={covidDataForCountry.deaths}
           />
         </div>
 
@@ -108,8 +105,9 @@ function App() {
 
       <Card className="app-right">
         <CardContent>
-          <h2>Live Cases By Country</h2>
-          <h2>Worldwide New Cases</h2>
+          <h3>Live Cases By Country</h3>
+          <Table countries={tableData} />
+          <h3>Worldwide New Cases</h3>
         </CardContent>
       </Card>
     </div>
