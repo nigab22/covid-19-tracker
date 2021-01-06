@@ -13,7 +13,13 @@ body {
 }
 
 .app-left {
-  flex: 0.9;
+  flex: 0.75;
+}
+
+.app-right {
+  flex: 0.25;
+  margin-left: 40px;
+  flex-direction: column;
 }
 
 .app-header {
@@ -23,13 +29,51 @@ body {
   margin-bottom: 20px;
 }
 
+.app-header > h1 {
+  color: #f01e1e;
+  font-size: 36px;
+}
+
 .app-stats {
   display: flex;
   justify-content: space-between;
 }
 
+.app-table-title,
+.app-graph-title {
+  color: #6a5d5d;
+  font-weight: 400;
+  font-size: 25px;
+  margin-bottom: 15px;
+}
+
+.app-graph-title {
+  margin-top: 30px;
+}
+
+.app-dropdown {
+  background-color: white;
+}
+
 @media (max-width: 990px) {
   .app {
+    flex-direction: column;
+  }
+  .app-right {
+    flex: 1;
+    margin-left: 0;
+    margin-top: 20px;
+  }
+}
+
+@media (max-width: 450px) {
+  .app-header {
+    flex-direction: column;
+  }
+  .app-header > h1 {
+    margin-bottom: 25px;
+  }
+  .app-stats {
     flex-direction: column;
   }
 }

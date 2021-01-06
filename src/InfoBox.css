@@ -1,4 +1,45 @@
 .info-box {
-  display: flex;
-  flex-direction: column;
+  flex: 1;
+  cursor: pointer;
+}
+
+.info-box:not(:last-child) {
+  margin-right: 15px;
+}
+
+.info-box-title {
+  font-weight: bolder !important;
+}
+
+.info-box-cases {
+  color: #cc1034;
+  font-weight: 600;
+  font-size: 1.75rem;
+  margin-bottom: 7px;
+}
+
+.info-box-total {
+  color: #6c757d;
+  font-weight: 700 !important;
+  font-size: 0.9rem !important;
+  margin-top: 15px !important;
+}
+
+.info-box-selected {
+  border-top: 10px solid rgb(152, 221, 49);
+}
+
+.info-box-red {
+  border-color: red;
+}
+
+.info-box-recovered {
+  color: rgb(152, 221, 49);
+}
+
+@media (max-width: 450px) {
+  .info-box:not(:last-child) {
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
 }
